@@ -6,7 +6,7 @@ import { claudeSettingsPath, configDir, loadConfig } from './config'
 import { NameStore } from './names'
 import { readBranch } from './git'
 import { installHooks, removeHooks } from './hooks-config'
-import { jumpToSession } from './jump'
+import { jumpToSession, log } from './jump'
 import { PendingRegistry } from './pending'
 import { startServer } from './server'
 import { reduce, withPending, withTitle } from './store'
@@ -117,9 +117,22 @@ app.whenReady().then(async () => {
   })
 
   win.webContents.on('did-finish-load', emit)
+  // If the widget's page ever crashes or fails to load, reload it instead of leaving an invisible window.
+  win.webContents.on('render-process-gone', (_e, details) => {
+    log(`renderer gone: ${details.reason}; reloading`)
+    setTimeout(() => win?.reload(), 500)
+  })
+  win.webContents.on('did-fail-load', (_e, code, desc) => {
+    log(`load failed: ${code} ${desc}; reloading`)
+    setTimeout(() => win?.reload(), 1000)
+  })
 })
 
-app.on('second-instance', () => win?.showInactive())
+app.on('second-instance', () => {
+  if (!win) return
+  if (win.webContents.isCrashed()) win.reload()
+  win.show()
+})
 
 app.on('before-quit', () => {
   quitting = true
