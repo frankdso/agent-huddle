@@ -4,7 +4,7 @@ import type { Decision, HookEvent, HuddleState, PendingView, Session } from '../
 import { HOOK_PORT } from '../shared/types'
 import { claudeSettingsPath, loadConfig, saveConfig } from './config'
 import { readBranch } from './git'
-import { installHooks } from './hooks-config'
+import { installHooks, removeHooks } from './hooks-config'
 import { jumpToSession } from './jump'
 import { PendingRegistry } from './pending'
 import { startServer } from './server'
@@ -123,6 +123,7 @@ app.on('second-instance', () => win?.showInactive())
 app.on('before-quit', () => {
   quitting = true
   registry.resolveAll({ kind: 'defer' })
+  removeHooks(claudeSettingsPath())
 })
 
 ipcMain.on('huddle:decide', (_e, pendingId: string, d: Decision) => {

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { mergeHuddleHooks, installHooks, HUDDLE_EVENTS } from '../src/main/hooks-config'
+import { mergeHuddleHooks, installHooks, removeHooks, HUDDLE_EVENTS } from '../src/main/hooks-config'
 import { HOOK_PREFIX } from '../src/shared/types'
 
 const TOKEN = 'tok123'
@@ -93,5 +93,34 @@ describe('installHooks', () => {
     expect(r.ok).toBe(false)
     expect(readFileSync(path, 'utf8')).toBe('{ // comment\n "a": 1 }')
     expect(existsSync(path + '.huddle-backup')).toBe(false)
+  })
+})
+
+describe('removeHooks', () => {
+  it('removes only our hooks and drops empty event lists', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'huddle-'))
+    const path = join(dir, 'settings.json')
+    const mine = { matcher: 'Bash', hooks: [{ type: 'command', command: 'echo hi' }] }
+    writeFileSync(path, JSON.stringify({ model: 'opus', hooks: { PreToolUse: [mine] } }))
+    installHooks(path, TOKEN)
+    expect(removeHooks(path).ok).toBe(true)
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ model: 'opus', hooks: { PreToolUse: [mine] } })
+  })
+
+  it('removes the hooks key entirely when nothing else is left', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'huddle-'))
+    const path = join(dir, 'settings.json')
+    installHooks(path, TOKEN)
+    removeHooks(path)
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({})
+  })
+
+  it('is a no-op when the file is missing or unparseable', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'huddle-'))
+    expect(removeHooks(join(dir, 'nope.json')).ok).toBe(true)
+    const bad = join(dir, 'bad.json')
+    writeFileSync(bad, '{oops')
+    expect(removeHooks(bad).ok).toBe(false)
+    expect(readFileSync(bad, 'utf8')).toBe('{oops')
   })
 })

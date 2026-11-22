@@ -23,7 +23,7 @@ type HookGroup = { matcher?: string; hooks?: HookEntry[]; [k: string]: unknown }
 const isOurs = (h: HookEntry) => typeof h?.url === 'string' && h.url.startsWith(HOOK_PREFIX)
 
 /** Returns a copy of `settings` with exactly one Agent Huddle hook per event and every other hook untouched. */
-export function mergeHuddleHooks(settings: object, opts: { token: string }): object {
+export function mergeHuddleHooks(settings: object, opts: { token: string } | null): object {
   const out: any = structuredClone(settings ?? {})
   const hooks: Record<string, HookGroup[]> = out.hooks && typeof out.hooks === 'object' ? out.hooks : {}
 
@@ -40,7 +40,7 @@ export function mergeHuddleHooks(settings: object, opts: { token: string }): obj
     else delete hooks[event]
   }
 
-  for (const event of HUDDLE_EVENTS) {
+  for (const event of opts ? HUDDLE_EVENTS : []) {
     const group: HookGroup = {
       ...(TOOL_EVENTS.has(event) ? { matcher: '*' } : {}),
       hooks: [
@@ -48,7 +48,7 @@ export function mergeHuddleHooks(settings: object, opts: { token: string }): obj
           type: 'http',
           url: `${HOOK_PREFIX}${event}`,
           timeout: 600,
-          headers: { 'X-Huddle-Token': opts.token, 'X-Huddle-Tab': '$HUDDLE_TAB' },
+          headers: { 'X-Huddle-Token': opts!.token, 'X-Huddle-Tab': '$HUDDLE_TAB' },
           allowedEnvVars: ['HUDDLE_TAB']
         }
       ]
@@ -56,7 +56,8 @@ export function mergeHuddleHooks(settings: object, opts: { token: string }): obj
     hooks[event] = [...(hooks[event] ?? []), group]
   }
 
-  out.hooks = hooks
+  if (Object.keys(hooks).length) out.hooks = hooks
+  else delete out.hooks
   return out
 }
 
@@ -79,5 +80,20 @@ export function installHooks(settingsPath: string, token: string): { ok: boolean
   }
   const merged = mergeHuddleHooks(current, { token })
   writeFileSync(settingsPath, JSON.stringify(merged, null, 2) + '\n')
+  return { ok: true }
+}
+
+/** Takes our hooks back out (on quit), leaving everything else as it was. */
+export function removeHooks(settingsPath: string): { ok: boolean; reason?: string } {
+  if (!existsSync(settingsPath)) return { ok: true }
+  const raw = readFileSync(settingsPath, 'utf8')
+  if (!raw.trim()) return { ok: true }
+  let current: object
+  try {
+    current = JSON.parse(raw)
+  } catch (e) {
+    return { ok: false, reason: (e as Error).message }
+  }
+  writeFileSync(settingsPath, JSON.stringify(mergeHuddleHooks(current, null), null, 2) + '\n')
   return { ok: true }
 }

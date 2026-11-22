@@ -1,0 +1,30 @@
+appId: com.frankdso.agenthuddle
+productName: Agent Huddle
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**
+  - package.json
+extraResources:
+  - from: resources
+    to: .
+    filter: ["focus-tab.ps1", "tray.png", "tray@2x.png", "icon.png"]
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  artifactName: "Agent-Huddle-Setup-${version}.${ext}"
+nsis:
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Agent Huddle
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+publish:
+  provider: github
+  owner: frankdso
+  repo: agent-huddle
