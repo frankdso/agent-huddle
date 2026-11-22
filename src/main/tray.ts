@@ -1,6 +1,6 @@
-import { app, Menu, Tray, nativeImage, type BrowserWindow } from 'electron'
+import { app, Menu, Tray, nativeImage, shell, type BrowserWindow } from 'electron'
 import { join } from 'node:path'
-import { loadConfig, saveConfig } from './config'
+import { configDir, loadConfig, saveConfig } from './config'
 
 export function iconPath(name: string): string {
   return app.isPackaged ? join(process.resourcesPath, name) : join(app.getAppPath(), 'resources', name)
@@ -8,7 +8,7 @@ export function iconPath(name: string): string {
 
 export function createTray(win: BrowserWindow, opts: { onReconnect(): void; onQuit(): void }): Tray {
   const tray = new Tray(nativeImage.createFromPath(iconPath('tray.png')))
-  tray.setToolTip('Agent Huddle')
+  tray.setToolTip(`Agent Huddle v${app.getVersion()}`)
 
   const toggle = () => (win.isVisible() ? win.hide() : win.showInactive())
 
@@ -26,6 +26,9 @@ export function createTray(win: BrowserWindow, opts: { onReconnect(): void; onQu
         }
       },
       { label: 'Reconnect Claude Code', click: opts.onReconnect },
+      { label: 'Open log folder', click: () => void shell.openPath(configDir()) },
+      { type: 'separator' },
+      { label: `Agent Huddle v${app.getVersion()}`, enabled: false },
       { type: 'separator' },
       { label: 'Quit Agent Huddle', click: opts.onQuit }
     ])

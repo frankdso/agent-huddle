@@ -1,9 +1,8 @@
 import { execFile } from 'node:child_process'
-import { appendFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { app } from 'electron'
 import type { Session } from '../shared/types'
-import { configDir } from './config'
+import { log } from './log'
 import { matchCandidates } from './match'
 import { readTitles } from './transcript'
 
@@ -11,15 +10,6 @@ const scriptPath = () =>
   app.isPackaged
     ? join(process.resourcesPath, 'focus-tab.ps1')
     : join(app.getAppPath(), 'resources', 'focus-tab.ps1')
-
-export function log(line: string): void {
-  try {
-    mkdirSync(configDir(), { recursive: true })
-    appendFileSync(join(configDir(), 'huddle.log'), `${new Date().toISOString()} ${line}\n`)
-  } catch {
-    /* ignore */
-  }
-}
 
 export function jumpToSession(s: Session): Promise<string> {
   const candidates = matchCandidates(s, readTitles(s.transcriptPath))

@@ -2,6 +2,7 @@ import http from 'node:http'
 import type { Decision, HookEvent, PendingView, Question } from '../shared/types'
 import { PendingRegistry, toHookResponse } from './pending'
 import { describeTool } from './store'
+import { log } from './log'
 
 export interface ServerOptions {
   port: number
@@ -71,6 +72,8 @@ export function startServer(opts: ServerOptions): Promise<http.Server> {
       ev.hook_event_name ||= m[1]
       const tab = tabHeader(req.headers['x-huddle-tab'])
 
+      const sid = String(ev.session_id ?? '').slice(0, 8)
+      log(`hook ${ev.hook_event_name}${ev.tool_name ? ' tool=' + ev.tool_name : ''} session=${sid}${ev.agent_id ? ' subagent' : ''}`)
       try {
         opts.onEvent(ev, tab)
       } catch (e) {
@@ -96,10 +99,19 @@ export function startServer(opts: ServerOptions): Promise<http.Server> {
       if (!event || !view || !ev.session_id) return send(res, 200, {})
 
       const held = opts.registry.hold(ev.session_id, view, opts.timeoutMs)
+      const startedAt = Date.now()
+      let closedByClient = false
+      log(`hold ${view.kind} ${ev.hook_event_name} tool=${toolName} session=${sid} id=${held.id.slice(0, 8)}`)
       // If Claude Code gives up (hook timeout, user answered in terminal, process killed), release.
-      res.on('close', () => opts.registry.resolve(held.id, { kind: 'defer' }))
+      res.on('close', () => {
+        if (res.writableEnded) return
+        closedByClient = true
+        opts.registry.resolve(held.id, { kind: 'defer' })
+      })
       opts.onHold(ev.session_id, held.view)
       const decision = await held.promise
+      const ms = Date.now() - startedAt
+      log(`release id=${held.id.slice(0, 8)} decision=${decision.kind} after=${ms}ms${closedByClient ? ' (Claude Code closed the request)' : ''}`)
       opts.onRelease(ev.session_id, held.view, decision)
       send(res, 200, toHookResponse(event, decision, input))
     })

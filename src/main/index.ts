@@ -6,7 +6,8 @@ import { claudeSettingsPath, configDir, loadConfig } from './config'
 import { NameStore } from './names'
 import { readBranch } from './git'
 import { installHooks, removeHooks } from './hooks-config'
-import { jumpToSession, log } from './jump'
+import { jumpToSession } from './jump'
+import { log } from './log'
 import { PendingRegistry } from './pending'
 import { startServer } from './server'
 import { reduce, withPending, withTitle } from './store'
@@ -92,6 +93,7 @@ function onRelease(sessionId: string, view: PendingView, d: Decision) {
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.frankdso.agenthuddle')
+  log(`start v${app.getVersion()} exe=${process.execPath}`)
   const cfg = loadConfig()
   if (app.isPackaged) app.setLoginItemSettings({ openAtLogin: cfg.autostart, path: process.execPath })
 
