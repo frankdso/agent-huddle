@@ -5,8 +5,8 @@ import { randomBytes } from 'node:crypto'
 
 export interface HuddleConfig {
   token: string
-  /** Set once the first-run defaults (start with Windows) have been applied. */
-  initialized: boolean
+  /** Start with Windows. Re-applied on every launch so it always points at the current exe. */
+  autostart: boolean
 }
 
 export const configDir = () => join(homedir(), '.agent-huddle')
@@ -25,7 +25,7 @@ export function loadConfig(dir = configDir()): HuddleConfig {
   }
   const full: HuddleConfig = {
     token: typeof cfg.token === 'string' && cfg.token.length >= 16 ? cfg.token : randomBytes(24).toString('hex'),
-    initialized: !!cfg.initialized
+    autostart: cfg.autostart !== false
   }
   if (full.token !== cfg.token) saveConfig(full, dir)
   return full

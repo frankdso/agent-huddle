@@ -2,7 +2,7 @@ import { app, ipcMain, type BrowserWindow, type Tray } from 'electron'
 import { basename } from 'node:path'
 import type { Decision, HookEvent, HuddleState, PendingView, Session } from '../shared/types'
 import { HOOK_PORT } from '../shared/types'
-import { claudeSettingsPath, loadConfig, saveConfig } from './config'
+import { claudeSettingsPath, loadConfig } from './config'
 import { readBranch } from './git'
 import { installHooks, removeHooks } from './hooks-config'
 import { jumpToSession } from './jump'
@@ -88,10 +88,7 @@ function onRelease(sessionId: string, view: PendingView, d: Decision) {
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.frankdso.agenthuddle')
   const cfg = loadConfig()
-  if (!cfg.initialized) {
-    if (app.isPackaged) app.setLoginItemSettings({ openAtLogin: true })
-    saveConfig({ ...cfg, initialized: true })
-  }
+  if (app.isPackaged) app.setLoginItemSettings({ openAtLogin: cfg.autostart, path: process.execPath })
 
   win = createWidget()
   win.on('close', (e) => {

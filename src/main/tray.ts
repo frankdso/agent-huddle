@@ -1,5 +1,6 @@
 import { app, Menu, Tray, nativeImage, type BrowserWindow } from 'electron'
 import { join } from 'node:path'
+import { loadConfig, saveConfig } from './config'
 
 export function iconPath(name: string): string {
   return app.isPackaged ? join(process.resourcesPath, name) : join(app.getAppPath(), 'resources', name)
@@ -19,7 +20,10 @@ export function createTray(win: BrowserWindow, opts: { onReconnect(): void; onQu
         label: 'Start with Windows',
         type: 'checkbox',
         checked: app.getLoginItemSettings().openAtLogin,
-        click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked })
+        click: (item) => {
+          app.setLoginItemSettings({ openAtLogin: item.checked, path: process.execPath })
+          saveConfig({ ...loadConfig(), autostart: item.checked })
+        }
       },
       { label: 'Reconnect Claude Code', click: opts.onReconnect },
       { type: 'separator' },
