@@ -4,6 +4,7 @@ import type { Session } from '@shared/types'
 import { Avatar } from './Avatar'
 import { PermissionPanel } from './PermissionPanel'
 import { QuestionPanel } from './QuestionPanel'
+import { EditableTitle } from './EditableTitle'
 
 export const needsYou = (s: Session) =>
   s.status === 'needs-permission' || s.status === 'asks-question' || s.status === 'waiting'
@@ -20,14 +21,20 @@ export function statusLine(s: Session): string {
   return s.activity
 }
 
+export function folderOf(s: Session): string {
+  return s.cwd.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || s.repo || 'Claude session'
+}
+
+/** Your name for the session if you set one, otherwise the folder it's running in. */
 export function titleOf(s: Session): string {
-  return s.title || s.repo || 'Claude session'
+  return s.customTitle || folderOf(s)
 }
 
 export function Progress({ s }: { s: Session }) {
   const total = s.tasks.length
   const done = s.tasks.filter((t) => t.status === 'completed').length
-  const where = [s.repo, s.branch].filter(Boolean).join(' · ')
+  const folder = folderOf(s)
+  const where = [s.customTitle && s.repo ? s.repo : s.repo !== folder ? s.repo : null, s.branch].filter(Boolean).join(' · ')
   return (
     <div className="mt-1 flex items-center gap-2">
       <span className="shrink-0 text-[11px] font-semibold tabular-nums">
@@ -72,7 +79,7 @@ export function SessionCard({ s, onOpen }: { s: Session; onOpen(): void }) {
       <div className="flex cursor-pointer items-start gap-3 px-3 pt-2.5 pb-2.5" onClick={onOpen}>
         <Avatar id={s.id} mood={moodOf(s)} />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[13.5px] leading-5 font-semibold">{titleOf(s)}</div>
+          <EditableTitle s={s} className="text-[13.5px] leading-5" />
           <div
             className={`truncate text-[12px] leading-4 ${
               highlight || s.status === 'waiting' ? 'font-medium text-lime' : 'text-muted'

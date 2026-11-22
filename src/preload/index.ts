@@ -11,6 +11,7 @@ const api: HuddleApi = {
   jump: (sessionId: string) => ipcRenderer.send('huddle:jump', sessionId),
   dismiss: (sessionId: string) => ipcRenderer.send('huddle:dismiss', sessionId),
   setHeight: (px: number) => ipcRenderer.send('huddle:height', px),
+  rename: (sessionId: string, title: string) => ipcRenderer.send('huddle:rename', sessionId, title),
   hide: () => ipcRenderer.send('huddle:hide')
 }
 

@@ -54,6 +54,7 @@ function blank(ev: HookEvent, tabTag: string | null, now: number): Session {
     pending: null,
     tabTag,
     flash: null,
+    customTitle: null,
     startedAt: now,
     updatedAt: now
   }
@@ -209,5 +210,22 @@ export function withPending(
       ? 'working'
       : s.status
   next.set(sessionId, { ...s, pending, status, flash, updatedAt: now })
+  return next
+}
+
+const CUSTOM_TITLE_MAX = 60
+
+/** Pure: sets (or, with an empty name, clears) the user's own name for a session. */
+export function withTitle(
+  sessions: Map<string, Session>,
+  sessionId: string,
+  title: string | null,
+  now: number
+): Map<string, Session> {
+  const s = sessions.get(sessionId)
+  if (!s) return sessions
+  const clean = (title ?? '').replace(/\s+/g, ' ').trim().slice(0, CUSTOM_TITLE_MAX)
+  const next = new Map(sessions)
+  next.set(sessionId, { ...s, customTitle: clean || null, updatedAt: now })
   return next
 }

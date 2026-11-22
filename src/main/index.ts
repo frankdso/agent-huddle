@@ -1,14 +1,15 @@
 import { app, ipcMain, type BrowserWindow, type Tray } from 'electron'
-import { basename } from 'node:path'
+import { basename, join } from 'node:path'
 import type { Decision, HookEvent, HuddleState, PendingView, Session } from '../shared/types'
 import { HOOK_PORT } from '../shared/types'
-import { claudeSettingsPath, loadConfig } from './config'
+import { claudeSettingsPath, configDir, loadConfig } from './config'
+import { NameStore } from './names'
 import { readBranch } from './git'
 import { installHooks, removeHooks } from './hooks-config'
 import { jumpToSession } from './jump'
 import { PendingRegistry } from './pending'
 import { startServer } from './server'
-import { reduce, withPending } from './store'
+import { reduce, withPending, withTitle } from './store'
 import { createTray } from './tray'
 import { createWidget, fitHeight } from './window'
 
@@ -22,6 +23,7 @@ let tray: Tray | null = null
 let sessions = new Map<string, Session>()
 let notice: string | null = null
 const registry = new PendingRegistry()
+const names = new NameStore(join(configDir(), 'names.json'))
 let quitting = false
 
 let emitTimer: NodeJS.Timeout | null = null
@@ -51,6 +53,8 @@ function onEvent(ev: HookEvent, tab: string | null) {
   if (s && (isNew || ev.hook_event_name === 'SessionStart' || ev.hook_event_name === 'UserPromptSubmit')) {
     const { branch, root } = readBranch(s.cwd || '.')
     sessions.set(s.id, { ...s, branch, repo: root ? basename(root) : s.repo })
+    const saved = names.get(s.id)
+    if (isNew && saved) sessions = withTitle(sessions, s.id, saved, Date.now())
   }
   emit()
 }
@@ -138,6 +142,11 @@ ipcMain.on('huddle:jump', (_e, sessionId: string) => {
 ipcMain.on('huddle:dismiss', (_e, sessionId: string) => {
   registry.resolveSession(sessionId, { kind: 'defer' })
   sessions.delete(sessionId)
+  emit()
+})
+ipcMain.on('huddle:rename', (_e, sessionId: string, title: string) => {
+  sessions = withTitle(sessions, sessionId, String(title ?? ''), Date.now())
+  names.set(sessionId, sessions.get(sessionId)?.customTitle ?? null)
   emit()
 })
 ipcMain.on('huddle:height', (_e, px: number) => win && fitHeight(win, px))

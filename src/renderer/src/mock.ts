@@ -16,6 +16,7 @@ export function installMock(): void {
     pending: null,
     tabTag: null,
     flash: null,
+    customTitle: null,
     startedAt: now,
     updatedAt: now,
     ...patch
@@ -36,7 +37,8 @@ export function installMock(): void {
         ? []
         : [
             base('a1', {
-              title: 'Auth refresh tokens',
+              title: 'Add refresh tokens to auth',
+              cwd: 'C:\\code\\sitefolio-wt-auth',
               repo: 'sitefolio-wt-auth',
               branch: 'auth-refresh',
               activity: 'Running the test suite',
@@ -44,7 +46,8 @@ export function installMock(): void {
               terminal: { command: 'npm test -- auth', output: ' ✓ refresh.test.ts (12)\n ✓ session.test.ts (8)\n ❯ middleware.test.ts', running: true }
             }),
             base('b2', {
-              title: 'Octo landing page polish',
+              title: 'Polish the hero section',
+              cwd: 'C:\\code\\octo-landing',
               repo: 'octo-landing',
               activity: 'needs permission',
               tasks: tasks(2, 6, 'Fixing hero layout'),
@@ -53,6 +56,7 @@ export function installMock(): void {
             }),
             base('c3', {
               title: 'Trade invite emails',
+              cwd: 'C:\\code\\sitefolio-wt-invites',
               repo: 'sitefolio-wt-invites',
               branch: 'invites',
               status: 'asks-question',
@@ -77,8 +81,9 @@ export function installMock(): void {
               }
             }),
             base('d4', {
-              title: 'COMP 4900 notes summary',
-              repo: 'notes',
+              title: 'Summarize lecture 9',
+              cwd: 'C:\\school\\comp4900\\notes',
+              repo: 'comp4900',
               branch: null,
               status: 'waiting',
               activity: 'Waiting for you',
@@ -112,6 +117,10 @@ export function installMock(): void {
     jump: () => {},
     dismiss(id) {
       state.sessions = state.sessions.filter((s) => s.id !== id)
+      push()
+    },
+    rename(id, title) {
+      state.sessions = state.sessions.map((s) => (s.id === id ? { ...s, customTitle: title.trim() || null } : s))
       push()
     },
     setHeight: () => {},

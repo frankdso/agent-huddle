@@ -41,6 +41,8 @@ export interface Session {
   pending: PendingView | null
   tabTag: string | null
   flash: string | null
+  /** Name the user typed in the widget; wins over the auto title from the first prompt. */
+  customTitle: string | null
   startedAt: number
   updatedAt: number
 }
@@ -70,6 +72,7 @@ export interface HuddleApi {
   jump(sessionId: string): void
   dismiss(sessionId: string): void
   setHeight(px: number): void
+  rename(sessionId: string, title: string): void
   hide(): void
 }
 

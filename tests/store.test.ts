@@ -144,3 +144,27 @@ describe('describeTool', () => {
     expect(describeTool(name, input)).toBe(expected)
   })
 })
+
+import { withTitle } from '../src/main/store'
+describe('withTitle', () => {
+  it('sets a custom title that later prompts never overwrite', () => {
+    let m = run(ev('UserPromptSubmit', { prompt: 'whats happening here' }))
+    m = withTitle(m, S, '  Auth refactor  ', 5)
+    m = reduce(m, ev('UserPromptSubmit', { prompt: 'next prompt' }), null, 6)
+    expect(m.get(S)!.customTitle).toBe('Auth refactor')
+    expect(m.get(S)!.title).toBe('whats happening here')
+  })
+  it('clears the custom title when given an empty name', () => {
+    let m = withTitle(run(ev('SessionStart')), S, 'X', 1)
+    m = withTitle(m, S, '   ', 2)
+    expect(m.get(S)!.customTitle).toBeNull()
+  })
+  it('caps the name at 60 characters', () => {
+    const m = withTitle(run(ev('SessionStart')), S, 'a'.repeat(100), 1)
+    expect(m.get(S)!.customTitle!.length).toBe(60)
+  })
+  it('ignores unknown sessions', () => {
+    const m = run(ev('SessionStart'))
+    expect(withTitle(m, 'nope', 'X', 1)).toBe(m)
+  })
+})

@@ -4,7 +4,8 @@ import type { Session } from '@shared/types'
 import { Avatar } from './Avatar'
 import { PermissionPanel } from './PermissionPanel'
 import { QuestionPanel } from './QuestionPanel'
-import { Progress, moodOf, statusLine, titleOf } from './SessionCard'
+import { Progress, moodOf, statusLine } from './SessionCard'
+import { EditableTitle } from './EditableTitle'
 
 export function SessionDetail({ s, onBack }: { s: Session; onBack(): void }) {
   return (
@@ -22,7 +23,7 @@ export function SessionDetail({ s, onBack }: { s: Session; onBack(): void }) {
           </button>
           <Avatar id={s.id} mood={moodOf(s)} size={34} />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[15px] leading-5 font-semibold">{titleOf(s)}</div>
+            <EditableTitle s={s} className="text-[15px] leading-5" editOnClick />
             <div className={`truncate text-[12px] leading-4 ${s.pending || s.flash || s.status === 'waiting' ? 'font-medium text-lime' : 'text-muted'}`}>
               {statusLine(s)}
             </div>

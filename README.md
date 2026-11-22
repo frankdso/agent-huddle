@@ -2,7 +2,7 @@
 
 A small always-on-top widget for Windows that keeps an eye on every Claude Code session you have running, across Windows Terminal tabs and git worktrees.
 
-- See every session: what it's doing, its task progress, and its repo and branch.
+- See every session: what it's doing, its task progress, and its branch. Sessions are named after their folder; click the pencil to rename one.
 - Click a session to see its task list and the last terminal command step by step.
 - **Allow / Deny** permission prompts and **answer Claude's questions** without leaving what you're doing.
 - **Jump** straight to the session's Windows Terminal tab.
