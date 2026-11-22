@@ -168,3 +168,13 @@ describe('withTitle', () => {
     expect(withTitle(m, 'nope', 'X', 1)).toBe(m)
   })
 })
+
+describe('transcriptPath', () => {
+  it('remembers the main session transcript, not a subagent one', () => {
+    const m = run(
+      ev('SessionStart', { transcript_path: 'C:\\t\\main.jsonl' }),
+      ev('PreToolUse', { tool_name: 'Read', tool_input: {}, agent_id: 'a1', transcript_path: 'C:\\t\\sub.jsonl' })
+    )
+    expect(m.get(S)!.transcriptPath).toBe('C:\\t\\main.jsonl')
+  })
+})

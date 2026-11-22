@@ -43,6 +43,7 @@ export interface Session {
   flash: string | null
   /** Name the user typed in the widget; wins over the auto title from the first prompt. */
   customTitle: string | null
+  transcriptPath: string | null
   startedAt: number
   updatedAt: number
 }

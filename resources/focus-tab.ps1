@@ -45,6 +45,7 @@ foreach ($m in ($Match -split '\|')) {
   }
 }
 
+$names = foreach ($w in $windows) { foreach ($tab in @($w.FindAll($Scope::Descendants, $isTab))) { $tab.Current.Name } }
 Bring-Forward $windows[0]
-Write-Output 'window'
+Write-Output ("window; tabs=" + (($names | ForEach-Object { "[$_]" }) -join ' '))
 exit 2

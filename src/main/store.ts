@@ -55,6 +55,7 @@ function blank(ev: HookEvent, tabTag: string | null, now: number): Session {
     tabTag,
     flash: null,
     customTitle: null,
+    transcriptPath: str(ev.transcript_path) || null,
     startedAt: now,
     updatedAt: now
   }
@@ -83,6 +84,7 @@ export function reduce(
   const prev = next.get(ev.session_id)
   let s: Session = prev ? { ...prev } : blank(ev, tabTag, now)
   if (tabTag && !s.tabTag) s.tabTag = tabTag
+  if (typeof ev.transcript_path === 'string' && ev.transcript_path && !ev.agent_id) s.transcriptPath = ev.transcript_path
   if (!s.cwd && ev.cwd) {
     s.cwd = str(ev.cwd)
     s.repo = basename(s.cwd)

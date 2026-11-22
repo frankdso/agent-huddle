@@ -17,6 +17,7 @@ export function installMock(): void {
     tabTag: null,
     flash: null,
     customTitle: null,
+    transcriptPath: null,
     startedAt: now,
     updatedAt: now,
     ...patch
