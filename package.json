@@ -1,7 +1,7 @@
 {
   "name": "agent-huddle",
   "productName": "Agent Huddle",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A corner widget that keeps an eye on every Claude Code session you have running.",
   "author": "frankdso",
   "license": "MIT",

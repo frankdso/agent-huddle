@@ -47,4 +47,4 @@ npm test           # unit + integration tests
 npm run dist       # build the Windows installer into dist/
 ```
 
-Releases: bump `version` in `package.json`, push, then either push a tag like `v0.2.0` or click **Run workflow** on the Release action. GitHub Actions tags the version if needed, builds the installer and publishes it as a GitHub Release.
+Releases: bump `version` in `package.json`, push, then either push a tag like `v0.2.0` or click **Run workflow** on the Release action. GitHub Actions builds the installer and publishes it (tag + release + files) in one step.

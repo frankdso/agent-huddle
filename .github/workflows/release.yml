@@ -21,16 +21,20 @@ jobs:
       - run: npm test
       - run: npm run typecheck
       - run: npx electron-vite build
-      - name: Tag this version (manual runs)
-        if: github.ref_type != 'tag'
+      - run: npx electron-builder --win --publish never
+      # Publish in one step: creates the tag and release if needed, then uploads all files.
+      # (electron-builder's own publisher uploads in parallel and can create duplicate releases.)
+      - name: Publish GitHub release
         shell: bash
-        run: |
-          V="v$(node -p "require('./package.json').version")"
-          if git ls-remote --exit-code --tags origin "refs/tags/$V" >/dev/null; then
-            echo "$V already tagged"
-          else
-            git tag "$V" && git push origin "$V"
-          fi
-      - run: npx electron-builder --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v$VERSION"
+          FILES=(dist/Agent-Huddle-Setup-"$VERSION".exe dist/Agent-Huddle-Setup-"$VERSION".exe.blockmap dist/latest.yml)
+          ls -la "${FILES[@]}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+          else
+            gh release create "$TAG" "${FILES[@]}" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
+          fi
