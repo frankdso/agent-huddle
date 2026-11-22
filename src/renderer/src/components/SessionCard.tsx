@@ -37,11 +37,11 @@ export function Progress({ s }: { s: Session }) {
   const where = [s.customTitle && s.repo ? s.repo : s.repo !== folder ? s.repo : null, s.branch].filter(Boolean).join(' · ')
   return (
     <div className="mt-1 flex items-center gap-2">
-      <span className="shrink-0 text-[11px] font-semibold tabular-nums">
+      <span className="min-w-0 shrink truncate text-[11px] font-semibold tabular-nums" title={where}>
         {total > 0 && <span className="text-lime">{done}/{total} </span>}
         <span className="font-medium text-muted">{where}</span>
       </span>
-      <div className="relative h-[3px] min-w-6 flex-1 overflow-hidden rounded-full bg-line">
+      <div className="relative h-[3px] min-w-12 flex-1 overflow-hidden rounded-full bg-line">
         {total > 0 ? (
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full bg-lime"
