@@ -57,9 +57,15 @@ export type Decision =
   | { kind: 'defer' }
   | { kind: 'answer'; answers: Record<string, string> }
 
+export interface HuddleState {
+  sessions: Session[]
+  /** A setup problem to show at the top of the widget, if any. */
+  notice: string | null
+}
+
 /** API the preload script exposes to the renderer as `window.huddle`. */
 export interface HuddleApi {
-  onState(cb: (sessions: Session[]) => void): () => void
+  onState(cb: (state: HuddleState) => void): () => void
   decide(pendingId: string, decision: Decision): void
   jump(sessionId: string): void
   dismiss(sessionId: string): void

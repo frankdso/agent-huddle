@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-panel: #141518;
+  --color-card: #1d1e22;
+  --color-card-hover: #232429;
+  --color-line: #2a2b31;
+  --color-ink: #f2f2f3;
+  --color-muted: #8d8f98;
+  --color-faint: #5d5f68;
+  --color-lime: #d4f53c;
+  --color-lime-dim: #9fb82d;
+  --font-sans: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "Cascadia Mono", Consolas, ui-monospace, monospace;
+}
+
+html, body, #root { margin: 0; background: transparent; overflow: hidden; }
+body { font-family: var(--font-sans); color: var(--color-ink); -webkit-font-smoothing: antialiased; user-select: none; }
+.drag { -webkit-app-region: drag; }
+.no-drag { -webkit-app-region: no-drag; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #34353c; border-radius: 3px; }
