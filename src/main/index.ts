@@ -66,6 +66,7 @@ function onHold(sessionId: string, view: PendingView) {
 }
 
 function flashFor(view: PendingView, d: Decision): string | null {
+  if (view.kind === 'plan') return d.kind === 'allow' ? 'Plan approved ✓' : d.kind === 'deny' ? 'Keeps planning' : null
   if (d.kind === 'allow') return 'Allowed ✓'
   if (d.kind === 'deny') return 'Denied'
   if (d.kind === 'answer') {

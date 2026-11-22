@@ -145,3 +145,52 @@ describe('server', () => {
     expect((await post('Stop', {})).status).toBe(200)
   })
 })
+
+describe('plan approval (ExitPlanMode)', () => {
+  const plan = '## Fix demo mode\n1. Add migration\n2. Update settings page'
+  const tool_input = { plan, planFilePath: 'C:\\Users\\x\\.claude\\plans\\p.md' }
+
+  it('holds ExitPlanMode at PreToolUse and shows the plan', async () => {
+    const { post, held, registry } = await boot()
+    const p = post('PreToolUse', { tool_name: 'ExitPlanMode', tool_input })
+    await waitFor(() => held.length === 1)
+    expect(held[0].view).toMatchObject({ kind: 'plan', toolName: 'ExitPlanMode', plan })
+    registry.resolve(held[0].view.id, { kind: 'allow' })
+    expect(await (await p).json()).toEqual({
+      hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'allow', updatedInput: tool_input }
+    })
+  })
+
+  it('"keep planning" denies with the feedback as the reason', async () => {
+    const { post, held, registry } = await boot()
+    const p = post('PreToolUse', { tool_name: 'ExitPlanMode', tool_input })
+    await waitFor(() => held.length === 1)
+    registry.resolve(held[0].view.id, { kind: 'deny', message: 'Also cover the admin page' })
+    expect(await (await p).json()).toEqual({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: 'Also cover the admin page'
+      }
+    })
+  })
+
+  it('does not hold PermissionRequest for ExitPlanMode or AskUserQuestion (so "In Terminal" really goes to the terminal)', async () => {
+    const { post, held } = await boot()
+    expect(await (await post('PermissionRequest', { tool_name: 'ExitPlanMode', tool_input })).json()).toEqual({})
+    expect(await (await post('PermissionRequest', { tool_name: 'AskUserQuestion', tool_input: {} })).json()).toEqual({})
+    expect(held).toHaveLength(0)
+  })
+})
+
+describe('toHookResponse PreToolUse deny without feedback', () => {
+  it('uses a default reason', () => {
+    expect(toHookResponse('PreToolUse', { kind: 'deny' }, {})).toEqual({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: 'The user wants to keep planning before you start.'
+      }
+    })
+  })
+})

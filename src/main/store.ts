@@ -205,9 +205,9 @@ export function withPending(
   if (!s) return sessions
   const next = new Map(sessions)
   const status = pending
-    ? pending.kind === 'permission'
-      ? 'needs-permission'
-      : 'asks-question'
+    ? pending.kind === 'question'
+      ? 'asks-question'
+      : 'needs-permission'
     : s.status === 'needs-permission' || s.status === 'asks-question'
       ? 'working'
       : s.status

@@ -5,6 +5,7 @@ import { Avatar } from './Avatar'
 import { PermissionPanel } from './PermissionPanel'
 import { QuestionPanel } from './QuestionPanel'
 import { EditableTitle } from './EditableTitle'
+import { PlanPanel } from './PlanPanel'
 
 export const needsYou = (s: Session) =>
   s.status === 'needs-permission' || s.status === 'asks-question' || s.status === 'waiting'
@@ -16,6 +17,7 @@ export function moodOf(s: Session): 'working' | 'alert' | 'idle' {
 
 export function statusLine(s: Session): string {
   if (s.flash) return s.flash
+  if (s.pending?.kind === 'plan') return 'has a plan for you'
   if (s.status === 'needs-permission') return 'needs permission'
   if (s.status === 'asks-question') return 'asks a question'
   return s.activity
@@ -114,6 +116,7 @@ export function SessionCard({ s, onOpen }: { s: Session; onOpen(): void }) {
       </div>
       {s.pending?.kind === 'permission' && <PermissionPanel pending={s.pending} />}
       {s.pending?.kind === 'question' && <QuestionPanel pending={s.pending} />}
+      {s.pending?.kind === 'plan' && <PlanPanel pending={s.pending} />}
     </motion.div>
   )
 }

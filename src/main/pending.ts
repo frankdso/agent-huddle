@@ -66,6 +66,16 @@ export function toHookResponse(event: 'PermissionRequest' | 'PreToolUse', d: Dec
       }
     return {}
   }
+  if (d.kind === 'allow')
+    return { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'allow', updatedInput: toolInput } }
+  if (d.kind === 'deny')
+    return {
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: d.message?.trim() || 'The user wants to keep planning before you start.'
+      }
+    }
   if (d.kind === 'answer')
     return {
       hookSpecificOutput: {

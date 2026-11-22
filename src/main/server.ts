@@ -81,12 +81,17 @@ export function startServer(opts: ServerOptions): Promise<http.Server> {
       const input: any = ev.tool_input ?? {}
       let event: 'PermissionRequest' | 'PreToolUse' | null = null
       let view: Omit<PendingView, 'id'> | null = null
-      if (ev.hook_event_name === 'PermissionRequest') {
+      const interactive = toolName === 'AskUserQuestion' || toolName === 'ExitPlanMode'
+      if (ev.hook_event_name === 'PermissionRequest' && !interactive) {
+        // Questions and plans are handled at PreToolUse; if the user sent them to the terminal, let the terminal ask.
         event = 'PermissionRequest'
         view = { kind: 'permission', toolName, summary: summarize(toolName, input) }
       } else if (ev.hook_event_name === 'PreToolUse' && toolName === 'AskUserQuestion' && !ev.agent_id) {
         event = 'PreToolUse'
         view = { kind: 'question', toolName, summary: 'asks a question', questions: questionsOf(input) }
+      } else if (ev.hook_event_name === 'PreToolUse' && toolName === 'ExitPlanMode' && !ev.agent_id) {
+        event = 'PreToolUse'
+        view = { kind: 'plan', toolName, summary: 'has a plan ready', plan: typeof input.plan === 'string' ? input.plan : '' }
       }
       if (!event || !view || !ev.session_id) return send(res, 200, {})
 

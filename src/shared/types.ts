@@ -22,10 +22,12 @@ export interface Question {
 
 export interface PendingView {
   id: string
-  kind: 'permission' | 'question'
+  kind: 'permission' | 'question' | 'plan'
   toolName: string
   summary: string
   questions?: Question[]
+  /** Plan markdown, for kind 'plan'. */
+  plan?: string
 }
 
 export interface Session {
@@ -56,7 +58,7 @@ export type HookEvent = Record<string, unknown> & {
 
 export type Decision =
   | { kind: 'allow' }
-  | { kind: 'deny' }
+  | { kind: 'deny'; message?: string }
   | { kind: 'defer' }
   | { kind: 'answer'; answers: Record<string, string> }
 

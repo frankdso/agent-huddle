@@ -6,6 +6,7 @@ import { PermissionPanel } from './PermissionPanel'
 import { QuestionPanel } from './QuestionPanel'
 import { Progress, moodOf, statusLine } from './SessionCard'
 import { EditableTitle } from './EditableTitle'
+import { PlanPanel } from './PlanPanel'
 
 export function SessionDetail({ s, onBack }: { s: Session; onBack(): void }) {
   return (
@@ -32,6 +33,7 @@ export function SessionDetail({ s, onBack }: { s: Session; onBack(): void }) {
         </div>
         {s.pending?.kind === 'permission' && <PermissionPanel pending={s.pending} />}
         {s.pending?.kind === 'question' && <QuestionPanel pending={s.pending} />}
+        {s.pending?.kind === 'plan' && <PlanPanel pending={s.pending} />}
       </div>
 
       {s.tasks.length > 0 && (
